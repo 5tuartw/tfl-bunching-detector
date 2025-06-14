@@ -1,7 +1,7 @@
 package config
 
 import (
-	"log"
+	"fmt"
 	"os"
 
 	"github.com/joho/godotenv"
@@ -11,20 +11,19 @@ type Config struct {
 	TflKey string
 }
 
-func NewConfig() (*Config){
+func NewConfig() (*Config, error){
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatalf("FATAL: unable to load .env file: %v.", err)
-		os.Exit(1)
+		return nil, fmt.Errorf("could not load .env file: %w", err)
 	}
 	tflKey := os.Getenv("TFL_API_KEY")
 	if tflKey == "" {
-		log.Fatalf("FATAL: could not find TFL_API_KEY in environment variables")
+		return nil, fmt.Errorf("could not find TFL_API_KEY in environment variables")
 	}
 
 	cfg := Config{
 		TflKey: tflKey,
 	}
 
-	return &cfg
+	return &cfg, nil
 }
