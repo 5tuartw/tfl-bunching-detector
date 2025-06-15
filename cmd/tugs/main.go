@@ -2,7 +2,7 @@ package main
 
 import (
 	"log"
-	"net/http"
+	"os"
 
 	"github.com/5tuartw/tfl-bunching-detector/internal/config"
 	"github.com/5tuartw/tfl-bunching-detector/internal/tflclient"
@@ -12,7 +12,7 @@ func main() {
 	cfg, err := config.NewConfig()
 	if err != nil {
 		log.Printf("ERROR: unable to load config: %v", err)
-
+		os.Exit(1)
 	} else {
 		log.Printf("Successfully loaded config. Using API key starting with: %s...", cfg.TflKey[:4])
 	}
@@ -23,6 +23,7 @@ func main() {
 	arrivalInfo, err := httpClient.GetArrivalInfo(stopId)
 	if err != nil {
 		log.Printf("ERROR: could not get arrival information for stop %s: %v", stopId, err)
+		os.Exit(1)
 	}
 
 	log.Print(arrivalInfo)
