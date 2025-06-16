@@ -4,9 +4,12 @@ import (
 	"log"
 	"os"
 
+	"github.com/5tuartw/tfl-bunching-detector/internal/analysis"
 	"github.com/5tuartw/tfl-bunching-detector/internal/config"
 	"github.com/5tuartw/tfl-bunching-detector/internal/tflclient"
 )
+
+const bunchingThreshold = 600 // seconds
 
 func main() {
 	cfg, err := config.NewConfig()
@@ -26,6 +29,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	log.Print(arrivalInfo)
+	bunchingEvents := analysis.AnalyseArrivals(arrivalInfo, bunchingThreshold)
 
+	log.Print(arrivalInfo)
+	log.Print(bunchingEvents)
 }
