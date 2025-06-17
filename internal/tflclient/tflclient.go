@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
 	"time"
@@ -38,7 +37,6 @@ func (c *Client) GetArrivalInfo(stopId string) ([]models.Arrival, error) {
 	q.Add("app_key", c.APIKey)
 	baseURL.RawQuery = q.Encode()
 	finalURL := baseURL.String()
-	log.Print(finalURL)
 
 	var arrivalInfo []models.Arrival
 	var requestBody io.Reader
@@ -48,7 +46,7 @@ func (c *Client) GetArrivalInfo(stopId string) ([]models.Arrival, error) {
 		return nil, fmt.Errorf("could not create http request: %v", err)
 	}
 	arrivalInfoRequest.Header.Set("User-Agent", "TFL-Bus-Bunching-Detector/1.0 stuart@stuartw.dev")
-	
+
 	response, err := c.HTTPClient.Do(arrivalInfoRequest)
 	if err != nil {
 		return nil, fmt.Errorf("request failed: %v", err)
