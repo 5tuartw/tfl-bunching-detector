@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/5tuartw/tfl-bunching-detector/internal/data"
 	"github.com/5tuartw/tfl-bunching-detector/internal/models"
 )
 
@@ -23,23 +24,15 @@ const (
 	stopAreaCol = 7
 )
 
-func LoadBusStops(filePath string) ([]models.BusStop, error) {
+func LoadBusStops() ([]models.BusStop, error) {
 
-	if filePath == "" {
-		return nil, fmt.Errorf("no filepath provided to load bus stops")
-	}
+	stringReader := strings.NewReader(data.BusStopsCSV)
 
-	file, err := os.Open(filePath)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read file '%s': %w", filePath, err)
-	}
-	defer file.Close()
-
-	csvReader := csv.NewReader(file)
+	csvReader := csv.NewReader(stringReader)
 
 	records, err := csvReader.ReadAll()
 	if err != nil {
-		return nil, fmt.Errorf("failed to read csv file '%s': %w", filePath, err)
+		return nil, fmt.Errorf("failed to read csv data: %w", err)
 	}
 
 	var allBusStops []models.BusStop
