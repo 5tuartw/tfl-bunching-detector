@@ -19,3 +19,12 @@ type BunchingEvent struct {
 	Headway     int       `json:"headway"`
 	VehicleIds  []string  `json:"vehicleIds"`
 }
+
+type BusStop struct {
+	NaptanId         string `json:"naptanId"`
+	StopName         string `json:"stopName"`
+	LocationEasting  int    `json:"locationEasting"`
+	LocationNorthing int    `json:"locationNorthing"`
+	Heading          int    `json:"heading"`
+	StopArea         string `json:"stopArea"`
+}
