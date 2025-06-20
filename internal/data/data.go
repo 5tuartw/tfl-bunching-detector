@@ -1,6 +1,6 @@
 package data
 
-import _ "embed"
+import "embed"
 
 //go:embed bus-stops.csv
-var BusStopsCSV string
+var DataFS embed.FS

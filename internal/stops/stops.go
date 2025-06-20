@@ -26,9 +26,13 @@ const (
 
 func LoadBusStops() ([]models.BusStop, error) {
 
-	stringReader := strings.NewReader(data.BusStopsCSV)
+	file, err := data.DataFS.Open("bus-stops.csv")
+	if err != nil {
+		return nil, fmt.Errorf("could not open embedded bus stop data: %v", err)
+	}
+	defer file.Close()
 
-	csvReader := csv.NewReader(stringReader)
+	csvReader := csv.NewReader(file)
 
 	records, err := csvReader.ReadAll()
 	if err != nil {
