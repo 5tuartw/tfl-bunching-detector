@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/csv"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"strconv"
@@ -26,13 +27,18 @@ const (
 
 func LoadBusStops() ([]models.BusStop, error) {
 
-	file, err := data.DataFS.Open("bus-stops.csv")
+	reader, _, err := data.GetBusStopsFile()
 	if err != nil {
-		return nil, fmt.Errorf("could not open embedded bus stop data: %v", err)
+		return nil, fmt.Errorf("could not open bus stop data: %v", err)
 	}
-	defer file.Close()
+	defer reader.Close()
 
-	csvReader := csv.NewReader(file)
+	return loadFromFile(reader)
+}
+
+func loadFromFile(reader io.Reader) ([]models.BusStop, error) {
+
+	csvReader := csv.NewReader(reader)
 
 	records, err := csvReader.ReadAll()
 	if err != nil {
