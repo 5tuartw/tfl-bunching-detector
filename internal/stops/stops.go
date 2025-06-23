@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"encoding/csv"
 	"fmt"
-	"io"
 	"log"
 	"os"
 	"strconv"
@@ -27,18 +26,15 @@ const (
 
 func LoadBusStops() ([]models.BusStop, error) {
 
-	reader, _, err := data.GetBusStopsFile()
+	busStopReader, err := data.NewBusStopReader()
 	if err != nil {
 		return nil, fmt.Errorf("could not open bus stop data: %v", err)
 	}
-	defer reader.Close()
+	defer busStopReader.Close()
 
-	return loadFromFile(reader)
-}
+	checkDataFreshness(busStopReader.Info())
 
-func loadFromFile(reader io.Reader) ([]models.BusStop, error) {
-
-	csvReader := csv.NewReader(reader)
+	csvReader := csv.NewReader(busStopReader)
 
 	records, err := csvReader.ReadAll()
 	if err != nil {
@@ -67,7 +63,6 @@ func loadFromFile(reader io.Reader) ([]models.BusStop, error) {
 		heading, err := strconv.Atoi(record[headingCol])
 		if err != nil {
 			heading = 0
-			stringConversionErrors[i] = append(stringConversionErrors[i], "heading")
 		}
 
 		allBusStops = append(allBusStops, models.BusStop{
@@ -100,6 +95,15 @@ func SearchStops(searchValue string, busStops []models.BusStop) []models.BusStop
 	}
 
 	return foundBusStops
+}
+
+func FindStopByID(naptainId string, busStops []models.BusStop) (models.BusStop, bool) {
+	for _, stop := range busStops {
+		if stop.NaptanId == naptainId {
+			return stop, true
+		}
+	}
+	return models.BusStop{}, false
 }
 
 func ChooseBusStop(busStops []models.BusStop) []models.BusStop {

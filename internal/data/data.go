@@ -61,20 +61,3 @@ func (r *BusStopReader) Read(p []byte) (n int, err error) {
 func (r *BusStopReader) Info() FileInfo {
 	return r.info
 }
-
-func GetBusStopsFile() (io.ReadCloser, FileInfo, error) {
-	if file, err := os.Open("bus-stops.csv"); err == nil {
-		stat, err := file.Stat()
-		if err != nil {
-			file.Close()
-			return nil, FileInfo{}, err
-		}
-		return file, FileInfo{ModTime: stat.ModTime(), IsOS: true}, nil
-	}
-
-	embeddedFile, err := DataFS.Open("bus-stops.csv")
-	if err != nil {
-		return nil, FileInfo{}, err
-	}
-	return embeddedFile, FileInfo{IsOS: false}, nil
-}

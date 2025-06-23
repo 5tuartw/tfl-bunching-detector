@@ -1,24 +1,17 @@
 package stops
 
 import (
-	"fmt"
 	"log"
 	"time"
 
 	"github.com/5tuartw/tfl-bunching-detector/internal/data"
 )
 
-func checkDataFreshness() error {
+func checkDataFreshness(info data.FileInfo) {
 
-	reader, err := data.NewBusStopReader()
-	if err != nil {
-		return fmt.Errorf("using embedded data, freshness check not available")
-	}
-	defer reader.Close()
-
-	info := reader.Info()
 	if !info.IsOS {
-		return fmt.Errorf("using embedded data, freshness check not available")
+		log.Println("Using embedded data, freshness check not available.")
+		return
 	}
 
 	if time.Since(info.ModTime).Hours() > 30*24 {
@@ -26,6 +19,4 @@ func checkDataFreshness() error {
 	} else {
 		log.Printf("Bus stop data is up to date (from %s).", info.ModTime.Format("2006-01-02"))
 	}
-
-	return nil
 }
