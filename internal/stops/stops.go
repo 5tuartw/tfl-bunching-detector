@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/5tuartw/tfl-bunching-detector/internal/data"
+	"github.com/5tuartw/tfl-bunching-detector/internal/helpers"
 	"github.com/5tuartw/tfl-bunching-detector/internal/models"
 )
 
@@ -110,7 +111,7 @@ func ChooseBusStop(busStops []models.BusStop) []models.BusStop {
 	busStopCount := len(busStops)
 	fmt.Printf("Found %d matching stops:\n", busStopCount)
 	for i, stop := range busStops {
-		fmt.Printf("%d: %s (%s)\n", i+1, stop.StopName, stop.NaptanId)
+		fmt.Printf("%d: %s [%s] (%s)\n", i+1, stop.StopName, helpers.HeadingToDirection(stop.Heading), stop.NaptanId)
 	}
 
 	validEntry := false
