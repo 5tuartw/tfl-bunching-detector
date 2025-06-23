@@ -26,9 +26,15 @@ const (
 
 func LoadBusStops() ([]models.BusStop, error) {
 
-	stringReader := strings.NewReader(data.BusStopsCSV)
+	busStopReader, err := data.NewBusStopReader()
+	if err != nil {
+		return nil, fmt.Errorf("could not open bus stop data: %v", err)
+	}
+	defer busStopReader.Close()
 
-	csvReader := csv.NewReader(stringReader)
+	checkDataFreshness(busStopReader.Info())
+
+	csvReader := csv.NewReader(busStopReader)
 
 	records, err := csvReader.ReadAll()
 	if err != nil {
@@ -57,7 +63,6 @@ func LoadBusStops() ([]models.BusStop, error) {
 		heading, err := strconv.Atoi(record[headingCol])
 		if err != nil {
 			heading = 0
-			stringConversionErrors[i] = append(stringConversionErrors[i], "heading")
 		}
 
 		allBusStops = append(allBusStops, models.BusStop{
@@ -90,6 +95,15 @@ func SearchStops(searchValue string, busStops []models.BusStop) []models.BusStop
 	}
 
 	return foundBusStops
+}
+
+func FindStopByID(naptainId string, busStops []models.BusStop) (models.BusStop, bool) {
+	for _, stop := range busStops {
+		if stop.NaptanId == naptainId {
+			return stop, true
+		}
+	}
+	return models.BusStop{}, false
 }
 
 func ChooseBusStop(busStops []models.BusStop) []models.BusStop {
