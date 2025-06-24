@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"text/tabwriter"
 
 	"github.com/5tuartw/tfl-bunching-detector/internal/helpers"
@@ -36,4 +37,27 @@ func PrintBunchingData(stop models.BusStop, threshold int, bunchingEvents []mode
 
 	tw.Flush()
 
+}
+
+func PrintRoute(route models.Route) {
+	tw := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+	fmt.Printf("Route: %s\n\n", parseRouteName(route.Name))
+	fmt.Fprintln(tw, "Stop\tHeading")
+	fmt.Fprintln(tw, "====\t=======")
+	for _, stop := range route.Stops {
+		fmt.Fprintf(tw, "%s\t%s\n",
+			stop.StopName,
+			helpers.HeadingToDirection(stop.Heading),
+		)
+	}
+	tw.Flush()
+	fmt.Println("")
+}
+
+func parseRouteName(name string) string {
+	splitName := strings.Split(name, "&harr")
+	if len(splitName) != 2 {
+		return name
+	}
+	return strings.Join(splitName, "to")
 }

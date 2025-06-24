@@ -28,3 +28,15 @@ type BusStop struct {
 	Heading          int    `json:"heading"`
 	StopArea         string `json:"stopArea"`
 }
+
+type Route struct {
+	Name        string    `json:"name"`
+	StopIds     []string  `json:"naptanIds"`
+	Stops       []BusStop `json:"busStops"`
+	ServiceType string    `json:"serviceType"`
+}
+
+type LineInfo struct {
+	LineId string  `json:"lineId"`
+	Routes []Route `json:"orderedLineRoutes"`
+}
