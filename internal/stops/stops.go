@@ -107,6 +107,19 @@ func FindStopByID(naptainId string, busStops []models.BusStop) (models.BusStop, 
 	return models.BusStop{}, false
 }
 
+func FindStopByIds(ids []string, allStops []models.BusStop) []models.BusStop {
+	stopListWithDetails := []models.BusStop{}
+
+	for _, stop := range ids {
+		if stopInfo, found := FindStopByID(stop, allStops); found {
+			stopListWithDetails = append(stopListWithDetails, stopInfo)
+		} else {
+			log.Printf("No stop found with Naptan ID '%s' whilst searching through route stops.", stop)
+		}
+	}
+	return stopListWithDetails
+}
+
 func ChooseBusStop(busStops []models.BusStop) []models.BusStop {
 	busStopCount := len(busStops)
 	fmt.Printf("Found %d matching stops:\n", busStopCount)

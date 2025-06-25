@@ -55,9 +55,11 @@ func PrintRoute(route models.Route) {
 }
 
 func parseRouteName(name string) string {
-	splitName := strings.Split(name, "&harr")
+	splitName := strings.Split(name, "&harr;")
 	if len(splitName) != 2 {
 		return name
 	}
-	return strings.Join(splitName, "to")
+	rejoined := strings.Join(splitName, "to")
+	removeSpaces := strings.Trim(strings.ReplaceAll(rejoined, "  ", " "), " ")
+	return removeSpaces
 }

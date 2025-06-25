@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"os"
 
@@ -30,7 +31,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("ERROR: unable to load config: %v", err)
 	} else {
-		log.Printf("Successfully loaded config. Using API key starting with: %s...", cfg.TflKey[:4])
+		log.Printf("Successfully loaded config. Using API key starting with: %s...\n", cfg.TflKey[:4])
 	}
 
 	httpClient := tflclient.NewClient("https://api.tfl.gov.uk", cfg.TflKey)
@@ -41,21 +42,15 @@ func main() {
 	}
 
 	if *lineId != "" {
-		lineInfo, err := httpClient.GetLineInfo(*lineId)
+		fmt.Printf("Looking up stops on bus route %s...\n\n", *lineId)
+		lineInfo, err := httpClient.RequestLineInfo(*lineId)
 		if err != nil {
 			log.Fatalf("ERROR: could not get line information for %s: %v", *lineId, err)
 		}
 
 		for i, route := range lineInfo.Routes {
-			stopListComplete := []models.BusStop{}
+			stopListComplete := stops.FindStopByIds(route.StopIds, allBusStops)
 
-			for _, stop := range route.StopIds {
-				if stopInfo, found := stops.FindStopByID(stop, allBusStops); found {
-					stopListComplete = append(stopListComplete, stopInfo)
-				} else {
-					log.Printf("No stop found with Naptan ID '%s'.", stop)
-				}
-			}
 			lineInfo.Routes[i].Stops = stopListComplete
 			display.PrintRoute(lineInfo.Routes[i])
 		}
@@ -82,7 +77,7 @@ func main() {
 
 	for _, stop := range chosenBusStops {
 
-		arrivalInfo, err := httpClient.GetArrivalInfo(stop.NaptanId)
+		arrivalInfo, err := stops.GetStopArrivalInfo(httpClient, stop.NaptanId)
 		if err != nil {
 			log.Fatalf("ERROR: could not get arrival information for stop %s: %v", stop.NaptanId, err)
 		}
