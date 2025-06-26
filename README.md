@@ -12,7 +12,7 @@ This command-line tool analyses live London bus arrival data to detect and repor
 ## 🚀 Usage
 
 ```
-go run ./cmd/tugs/main.go [flags]
+go run ./cmd/main/main.go [flags]
 ```
 
 ### 🏷️ Flags
@@ -26,15 +26,15 @@ At least one of `-stop-id`, `-search`, or `-line` must be provided.
 ### 💡 Examples
 - Analyse bunching for a specific stop:
   ```
-  go run ./cmd/tugs/main.go -stop-id="490008660N"
+  go run ./cmd/main/main.go -stop-id="490008660N"
   ```
 - Search for stops by name and select interactively:
   ```
-  go run ./cmd/tugs/main.go -search="Waterloo"
+  go run ./cmd/main/main.go -search="Waterloo"
   ```
 - Analyse bunching for a whole bus route with a custom threshold:
   ```
-  go run ./cmd/tugs/main.go -line="77" -threshold=500
+  go run ./cmd/main/main.go -line="77" -threshold=500
   ```
 
 ## 📊 Output
