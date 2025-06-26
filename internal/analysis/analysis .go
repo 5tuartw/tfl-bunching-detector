@@ -4,6 +4,7 @@ import (
 	"log"
 	"sort"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/5tuartw/tfl-bunching-detector/internal/models"
@@ -51,19 +52,51 @@ func groupByLine(arrivals []models.Arrival) map[string][]models.Arrival {
 	return groupedArrivals
 }
 
-func AnalyseRoute(httpClient tflclient.Client, route models.Route, threshold int) []models.BunchingEvent {
+func AnalyseRoute(client tflclient.Client, threshold int, route models.Route) []models.BunchingEvent {
 	bunchesOnRoute := []models.BunchingEvent{}
 
-	for _, stop := range route.StopIds {
-		arrivals, err := stops.GetStopArrivalInfo(&httpClient, stop)
-		if err != nil {
-			log.Printf("Unable to get arrival info for stop '%s': %v", stop, err)
-		}
-		bunches := AnalyseArrivals(arrivals, threshold)
-		bunchesOnRoute = append(bunchesOnRoute, bunches...)
+	var wg sync.WaitGroup
+	jobs := make(chan string, len(route.StopIds))
+	results := make(chan []models.BunchingEvent)
+
+	// setup the workers
+	const numWorkers = 5
+	for w := 1; w <= numWorkers; w++ {
+		go routeWorker(&wg, &client, threshold, jobs, results)
 	}
+
+	//assign the workers
+	for _, stop := range route.StopIds {
+		wg.Add(1)
+		jobs <- stop
+	}
+	close(jobs)
+
+	//prepare to close results when done
+	go func() {
+		wg.Wait()
+		close(results)
+	}()
+
+	//add results to list
+	for res := range results {
+		bunchesOnRoute = append(bunchesOnRoute, res...)
+	}
+
 	bunchesWithoutRepeats := removeRepeats(bunchesOnRoute)
 	return bunchesWithoutRepeats
+}
+
+func routeWorker(wg *sync.WaitGroup, client *tflclient.Client, threshold int, jobs <-chan string, results chan<- []models.BunchingEvent) {
+	for stopId := range jobs {
+		arrivals, err := stops.GetStopArrivalInfo(client, stopId)
+		if err != nil {
+			log.Printf("Unable to get arrival info for stop '%s': %v", stopId, err)
+		}
+		bunches := AnalyseArrivals(arrivals, threshold)
+		results <- bunches
+		wg.Done()
+	}
 }
 
 func removeRepeats(bunches []models.BunchingEvent) []models.BunchingEvent {

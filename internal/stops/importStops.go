@@ -8,9 +8,8 @@ import (
 )
 
 func checkDataFreshness(info data.FileInfo) {
-
 	if !info.IsOS {
-		log.Println("Using embedded data, freshness check not available.")
+		log.Println("Using embedded bus stop data; freshness check not available.")
 		return
 	}
 

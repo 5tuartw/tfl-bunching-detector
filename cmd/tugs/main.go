@@ -9,6 +9,8 @@ import (
 	"github.com/5tuartw/tfl-bunching-detector/internal/analysis"
 	"github.com/5tuartw/tfl-bunching-detector/internal/config"
 	"github.com/5tuartw/tfl-bunching-detector/internal/display"
+	"github.com/5tuartw/tfl-bunching-detector/internal/helpers"
+	"github.com/5tuartw/tfl-bunching-detector/internal/lines"
 	"github.com/5tuartw/tfl-bunching-detector/internal/models"
 	"github.com/5tuartw/tfl-bunching-detector/internal/stops"
 	"github.com/5tuartw/tfl-bunching-detector/internal/tflclient"
@@ -31,7 +33,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("ERROR: unable to load config: %v", err)
 	} else {
-		log.Printf("Successfully loaded config. Using API key starting with: %s...\n", cfg.TflKey[:4])
+		//log.Printf("Successfully loaded config. Using API key starting with: %s...\n", cfg.TflKey[:4])
 	}
 
 	httpClient := tflclient.NewClient("https://api.tfl.gov.uk", cfg.TflKey)
@@ -43,17 +45,18 @@ func main() {
 
 	if *lineId != "" {
 		fmt.Printf("Looking up stops on bus route %s...\n\n", *lineId)
-		lineInfo, err := httpClient.RequestLineInfo(*lineId)
+		lineInfo, err := lines.GetLineInfo(httpClient, *lineId)
 		if err != nil {
 			log.Fatalf("ERROR: could not get line information for %s: %v", *lineId, err)
 		}
 
-		for i, route := range lineInfo.Routes {
-			stopListComplete := stops.FindStopByIds(route.StopIds, allBusStops)
-
-			lineInfo.Routes[i].Stops = stopListComplete
-			display.PrintRoute(lineInfo.Routes[i])
+		selectedRoutes := lines.ChooseRoute(lineInfo)
+		for _, route := range selectedRoutes {
+			routeBunchingEvents := analysis.AnalyseRoute(*httpClient, *bunchingThreshold, lineInfo.Routes[route])
+			routeName := lineInfo.Routes[route].Name
+			display.PrintBunchingData(routeName, *bunchingThreshold, routeBunchingEvents)
 		}
+
 		os.Exit(1)
 	}
 
@@ -83,6 +86,7 @@ func main() {
 		}
 
 		bunchingEvents := analysis.AnalyseArrivals(arrivalInfo, *bunchingThreshold)
-		display.PrintBunchingData(stop, *bunchingThreshold, bunchingEvents)
+		stopName := helpers.GetStopName(stop)
+		display.PrintBunchingData(stopName, *bunchingThreshold, bunchingEvents)
 	}
 }
