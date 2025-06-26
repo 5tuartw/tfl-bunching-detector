@@ -28,14 +28,17 @@ At least one of `-stop-id`, `-search`, or `-line` must be provided.
   ```
   go run ./cmd/main/main.go -stop-id="490008660N"
   ```
+  ![Example output for -stop-id](docs/screenshots/screenshot-stop-id.png)
 - Search for stops by name and select interactively:
   ```
   go run ./cmd/main/main.go -search="Waterloo"
   ```
+  ![Example output for -search](docs/screenshots/screenshot-search.png)
 - Analyse bunching for a whole bus route with a custom threshold:
   ```
-  go run ./cmd/main/main.go -line="77" -threshold=500
+  go run ./cmd/main/main.go -line="77" -threshold=200
   ```
+  ![Example output for -line and -threshold](docs/screenshots/screenshot-line-threshold.png)
 
 ## 📊 Output
 - If bunching events are detected, a table is printed with columns: Line, Stop, Vehicle 1, Vehicle 2, Headway (s)
