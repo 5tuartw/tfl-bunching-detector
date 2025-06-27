@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-func GetMenuChoice(maxChoice int) ([]int, bool) {
+func GetMenuChoiceMultiple(maxChoice int) ([]int, bool) {
 	var selectedStops []int
 	scanner := bufio.NewScanner(os.Stdin)
 	fmt.Print("Enter one or more numbers from the list, separated by a space: ")

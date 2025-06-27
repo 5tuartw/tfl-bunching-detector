@@ -129,7 +129,7 @@ func ChooseBusStop(busStops []models.BusStop) []models.BusStop {
 	var userInput []int
 
 	for !validEntry {
-		userInput, validEntry = helpers.GetMenuChoice(busStopCount)
+		userInput, validEntry = helpers.GetMenuChoiceMultiple(busStopCount)
 	}
 
 	var chosenBusStops []models.BusStop

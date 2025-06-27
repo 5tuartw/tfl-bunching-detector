@@ -32,8 +32,6 @@ func main() {
 	cfg, err := config.NewConfig()
 	if err != nil {
 		log.Fatalf("ERROR: unable to load config: %v", err)
-	} else {
-		//log.Printf("Successfully loaded config. Using API key starting with: %s...\n", cfg.TflKey[:4])
 	}
 
 	httpClient := tflclient.NewClient("https://api.tfl.gov.uk", cfg.TflKey)
@@ -43,8 +41,9 @@ func main() {
 		log.Fatalf("Error: could not load bus stop data: %v", err)
 	}
 
+	// Analysing the given lineId at the current moment
 	if *lineId != "" {
-		fmt.Printf("Looking up stops on bus route %s...\n\n", *lineId)
+		fmt.Printf("Looking up routes and stops on bus line %s...\n\n", *lineId)
 		lineInfo, err := lines.GetLineInfo(httpClient, *lineId)
 		if err != nil {
 			log.Fatalf("ERROR: could not get line information for %s: %v", *lineId, err)
@@ -56,12 +55,12 @@ func main() {
 			routeName := lineInfo.Routes[route].Name
 			display.PrintBunchingData(routeName, *bunchingThreshold, routeBunchingEvents)
 		}
-
 		os.Exit(1)
 	}
 
 	var chosenBusStops []models.BusStop
 
+	// Conducting a search for stops if flag is raised and adding stopIds to list
 	if *searchStop != "" {
 		matchingBusStops := stops.SearchStops(*searchStop, allBusStops)
 		if len(matchingBusStops) == 0 {
@@ -69,7 +68,7 @@ func main() {
 			os.Exit(0)
 		}
 		chosenBusStops = stops.ChooseBusStop(matchingBusStops)
-
+	// otherwise adding the flagged stop id to the list of stops to list
 	} else if *stopId != "" {
 		if stop, found := stops.FindStopByID(*stopId, allBusStops); found {
 			chosenBusStops = append(chosenBusStops, stop)
@@ -78,6 +77,7 @@ func main() {
 		}
 	}
 
+	// looking up arrivalInfo for each selected stop and displaying to terminal
 	for _, stop := range chosenBusStops {
 
 		arrivalInfo, err := stops.GetStopArrivalInfo(httpClient, stop.NaptanId)

@@ -30,7 +30,7 @@ func ChooseRoute(line models.LineInfo) []int {
 	var userInput []int
 
 	for !validEntry {
-		userInput, validEntry = helpers.GetMenuChoice(routeCount)
+		userInput, validEntry = helpers.GetMenuChoiceMultiple(routeCount)
 	}
 
 	var chosenRoutes []int
