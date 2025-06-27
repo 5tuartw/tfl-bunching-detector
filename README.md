@@ -1,19 +1,34 @@
 # 🚌 TfL Bus Bunching Detector
 
-This command-line tool analyses live London bus arrival data to detect and report instances of bus bunching on specific routes or at specific stops. It uses the Transport for London (TfL) API to fetch real-time data and applies a configurable threshold to identify when buses are arriving too close together (bunching).
+This command-line tool suite analyses live London bus arrival data to detect and report instances of bus bunching on specific routes or at specific stops. It uses the Transport for London (TfL) API to fetch real-time data and applies a configurable threshold to identify when buses are arriving too close together (bunching).
 
 ## ✨ Features
-- Detects bus bunching events for a given route or stop using live TfL data
-- Allows searching for stops by name or Naptan ID
-- Supports analysis of specific bus lines/routes
-- Configurable bunching threshold (in seconds)
-- Tabular output of bunching events, including line, stop, vehicle IDs, and headway
+- **Real-time Analysis**: Detects bus bunching events for a given route or stop using live TfL data
+- **Stop Search**: Allows searching for stops by name or Naptan ID
+- **Route Analysis**: Supports analysis of specific bus lines/routes
+- **Configurable Thresholds**: Adjustable bunching threshold (in seconds)
+- **Interactive Output**: Tabular output of bunching events, including line, stop, vehicle IDs, and headway
+- **Continuous Logging**: Periodic monitoring and CSV logging of bunching events for long-term analysis
 
 ## 🚀 Usage
 
+The tool provides two main commands:
+
+### 📊 Bunch Checker - One-time Analysis
 ```
-go run ./cmd/main/main.go [flags]
+go run ./cmd/bunch-checker/main.go [flags]
 ```
+
+### 📝 Bunch Logger - Continuous Monitoring
+```
+go run ./cmd/bunch-logger/main.go [flags]
+```
+
+---
+
+## 📊 Bunch Checker
+
+The bunch checker performs a one-time analysis of bus bunching events and displays results in the terminal.
 
 ### 🏷️ Flags
 - `-stop-id` (string): NaptanId for a specific stop (e.g. `-stop-id="490008660N"`)
@@ -26,25 +41,58 @@ At least one of `-stop-id`, `-search`, or `-line` must be provided.
 ### 💡 Examples
 - Analyse bunching for a specific stop:
   ```
-  go run ./cmd/main/main.go -stop-id="490008660N"
+  go run ./cmd/bunch-checker/main.go -stop-id="490008660N"
   ```
   ![Example output for -stop-id](docs/screenshots/screenshot-stop-id.png)
 - Search for stops by name and select interactively:
   ```
-  go run ./cmd/main/main.go -search="Waterloo"
+  go run ./cmd/bunch-checker/main.go -search="Waterloo"
   ```
   ![Example output for -search](docs/screenshots/screenshot-search.png)
 - Analyse bunching for a whole bus route with a custom threshold:
   ```
-  go run ./cmd/main/main.go -line="77" -threshold=200
+  go run ./cmd/bunch-checker/main.go -line="77" -threshold=200
   ```
   ![Example output for -line and -threshold](docs/screenshots/screenshot-line-threshold.png)
 
-## 📊 Output
-- If bunching events are detected, a table is printed with columns: Line, Stop, Vehicle 1, Vehicle 2, Headway (s)
-- If no bunching is detected, a message is printed
+---
 
-## 🛠️ Requirements
+## 📝 Bunch Logger
+
+The bunch logger continuously monitors bus lines for bunching events and logs them to a CSV file for long-term analysis.
+
+### 🏷️ Flags
+- `-lines` (string, required): Comma-separated list of bus lines to track (e.g. `-lines="77,205,N8"`)
+- `-interval` (int): Interval between checks in minutes (default: 5)
+- `-threshold` (int): Threshold for bunched buses in seconds (default: 90)
+- `-select-routes` (bool): Set to `true` to interactively select specific routes on each line (default: false)
+
+### 💡 Examples
+- Monitor multiple bus lines with default settings:
+  ```
+  go run ./cmd/bunch-logger/main.go -lines="77,205,N8"
+  ```
+- Monitor with custom interval and threshold:
+  ```
+  go run ./cmd/bunch-logger/main.go -lines="77,205" -interval=10 -threshold=120
+  ```
+- Monitor specific routes on lines (interactive selection):
+  ```
+  go run ./cmd/bunch-logger/main.go -lines="77,205" -select-routes=true
+  ```
+
+### 📁 Output File
+Logged bunching events are saved to: `internal/data/logged_bunching_events.csv`
+
+The CSV file contains the following columns:
+- **LineID**: The bus line identifier
+- **StopID**: The Naptan ID of the stop
+- **StopName**: The name of the stop
+- **EventTime**: Timestamp of when the bunching was detected
+- **Headway**: Time difference between bunched buses (in seconds)
+- **VehicleIDs**: Pipe-separated list of vehicle identifiers involved in the bunching event
+
+## ️ Requirements
 - Go 1.18+
 - A valid TfL API key (set in your config)
 
