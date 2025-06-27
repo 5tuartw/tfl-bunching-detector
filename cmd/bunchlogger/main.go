@@ -2,14 +2,15 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"strings"
 	"time"
 
 	"github.com/5tuartw/tfl-bunching-detector/internal/analysis"
 	"github.com/5tuartw/tfl-bunching-detector/internal/config"
-	"github.com/5tuartw/tfl-bunching-detector/internal/display"
 	"github.com/5tuartw/tfl-bunching-detector/internal/lines"
+	"github.com/5tuartw/tfl-bunching-detector/internal/logger"
 	"github.com/5tuartw/tfl-bunching-detector/internal/models"
 	"github.com/5tuartw/tfl-bunching-detector/internal/tflclient"
 )
@@ -53,23 +54,36 @@ func main() {
 			allSelectedLineRoutes = append(allSelectedLineRoutes, lineInfo)
 		}
 	}
-	for _, line := range allSelectedLineRoutes {
-		for _, route := range line.Routes {
-			routeBunchingEvents := analysis.AnalyseRoute(*httpClient, *bunchingThreshold, route)
-			display.PrintBunchingData(route.Name, *bunchingThreshold, routeBunchingEvents)
-		}
-	}	
+
+	log.Println("Running initial analysis...")
+
+	err = runAnalysis(httpClient, *bunchingThreshold, allSelectedLineRoutes)
+	if err != nil {
+		log.Fatalf("FATAL: unable to run initial analysis: %v", err)
+	}
 
 	ticker := time.NewTicker(time.Duration(*interval) * time.Minute)
 	defer ticker.Stop()
+	log.Printf("Initial analysis complete. Starting periodic logger (interval: %d mins)\n", *interval)
 
 	for range ticker.C {
-		log.Println("Ticker ticker! Running analysis...")
-		for _, line := range allSelectedLineRoutes {
-			for _, route := range line.Routes {
-				routeBunchingEvents := analysis.AnalyseRoute(*httpClient, *bunchingThreshold, route)
-				display.PrintBunchingData(route.Name, *bunchingThreshold, routeBunchingEvents)
+		log.Println("Running analysis...")
+		err = runAnalysis(httpClient, *bunchingThreshold, allSelectedLineRoutes)
+		if err != nil {
+			log.Printf("ERROR: unable to run periodic analysis: %v", err)
+		}
+	}
+}
+
+func runAnalysis(client *tflclient.Client, threshold int, linesToAnalyse []models.LineInfo) error {
+	for _, line := range linesToAnalyse {
+		for _, route := range line.Routes {
+			routeBunchingEvents := analysis.AnalyseRoute(*client, threshold, route)
+			err := logger.LogBunchingEvents(routeBunchingEvents)
+			if err != nil {
+				return fmt.Errorf("error logging bunching event for route %s, line %s: %v", route.Name, line.LineId, err)
 			}
 		}
 	}
+	return nil
 }
