@@ -78,8 +78,8 @@ func main() {
 func runAnalysis(client *tflclient.Client, threshold int, linesToAnalyse []models.LineInfo) error {
 	for _, line := range linesToAnalyse {
 		for _, route := range line.Routes {
-			routeBunchingEvents := analysis.AnalyseRoute(*client, threshold, route)
-			err := logger.LogBunchingEvents(routeBunchingEvents)
+			routeBunchingEvents := analysis.AnalyseRoute(*client, line.LineId, threshold, route)
+			err := logger.LogBunchingEvents(routeBunchingEvents, line.LineId)
 			if err != nil {
 				return fmt.Errorf("error logging bunching event for route %s, line %s: %v", route.Name, line.LineId, err)
 			}

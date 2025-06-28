@@ -51,7 +51,7 @@ func main() {
 
 		selectedRoutes := lines.ChooseRoute(lineInfo)
 		for _, route := range selectedRoutes {
-			routeBunchingEvents := analysis.AnalyseRoute(*httpClient, *bunchingThreshold, lineInfo.Routes[route])
+			routeBunchingEvents := analysis.AnalyseRoute(*httpClient, *lineId, *bunchingThreshold, lineInfo.Routes[route])
 			routeName := lineInfo.Routes[route].Name
 			display.PrintBunchingData(routeName, *bunchingThreshold, routeBunchingEvents)
 		}
@@ -68,7 +68,7 @@ func main() {
 			os.Exit(0)
 		}
 		chosenBusStops = stops.ChooseBusStop(matchingBusStops)
-	// otherwise adding the flagged stop id to the list of stops to list
+		// otherwise adding the flagged stop id to the list of stops to list
 	} else if *stopId != "" {
 		if stop, found := stops.FindStopByID(*stopId, allBusStops); found {
 			chosenBusStops = append(chosenBusStops, stop)
@@ -85,7 +85,7 @@ func main() {
 			log.Fatalf("ERROR: could not get arrival information for stop %s: %v", stop.NaptanId, err)
 		}
 
-		bunchingEvents := analysis.AnalyseArrivals(arrivalInfo, *bunchingThreshold)
+		bunchingEvents := analysis.AnalyseArrivals(arrivalInfo, "", *bunchingThreshold)
 		stopName := helpers.GetStopName(stop)
 		display.PrintBunchingData(stopName, *bunchingThreshold, bunchingEvents)
 	}

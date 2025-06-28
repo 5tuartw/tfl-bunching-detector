@@ -12,26 +12,28 @@ import (
 	"github.com/5tuartw/tfl-bunching-detector/internal/tflclient"
 )
 
-func AnalyseArrivals(arrivals []models.Arrival, bunchingThreshold int) []models.BunchingEvent {
+func AnalyseArrivals(arrivals []models.Arrival, targetLineID string, bunchingThreshold int) []models.BunchingEvent {
 	groupedArrivals := groupByLine(arrivals)
 	var bunchingEvents []models.BunchingEvent
 
 	for line := range groupedArrivals {
-		sort.Slice(groupedArrivals[line], func(i, j int) bool {
-			return groupedArrivals[line][i].TimeToStation < groupedArrivals[line][j].TimeToStation
-		})
+		if targetLineID == "" || line == targetLineID {
+			sort.Slice(groupedArrivals[line], func(i, j int) bool {
+				return groupedArrivals[line][i].TimeToStation < groupedArrivals[line][j].TimeToStation
+			})
 
-		for idx := 0; idx < len(groupedArrivals[line])-1; idx++ {
-			headway := groupedArrivals[line][idx+1].TimeToStation - groupedArrivals[line][idx].TimeToStation
-			if headway < bunchingThreshold {
-				bunchingEvents = append(bunchingEvents, models.BunchingEvent{
-					LineId:      line,
-					NaptanId:    groupedArrivals[line][idx].NaptanId,
-					StationName: groupedArrivals[line][idx].StationName,
-					EventTime:   time.Now(),
-					Headway:     headway,
-					VehicleIds:  []string{groupedArrivals[line][idx].VehicleId, groupedArrivals[line][idx+1].VehicleId},
-				})
+			for idx := 0; idx < len(groupedArrivals[line])-1; idx++ {
+				headway := groupedArrivals[line][idx+1].TimeToStation - groupedArrivals[line][idx].TimeToStation
+				if headway < bunchingThreshold {
+					bunchingEvents = append(bunchingEvents, models.BunchingEvent{
+						LineId:      line,
+						NaptanId:    groupedArrivals[line][idx].NaptanId,
+						StationName: groupedArrivals[line][idx].StationName,
+						EventTime:   time.Now(),
+						Headway:     headway,
+						VehicleIds:  []string{groupedArrivals[line][idx].VehicleId, groupedArrivals[line][idx+1].VehicleId},
+					})
+				}
 			}
 		}
 	}
@@ -52,7 +54,7 @@ func groupByLine(arrivals []models.Arrival) map[string][]models.Arrival {
 	return groupedArrivals
 }
 
-func AnalyseRoute(client tflclient.Client, threshold int, route models.Route) []models.BunchingEvent {
+func AnalyseRoute(client tflclient.Client, targetLineId string, threshold int, route models.Route) []models.BunchingEvent {
 	bunchesOnRoute := []models.BunchingEvent{}
 
 	var wg sync.WaitGroup
@@ -62,7 +64,7 @@ func AnalyseRoute(client tflclient.Client, threshold int, route models.Route) []
 	// setup the workers
 	const numWorkers = 5
 	for w := 1; w <= numWorkers; w++ {
-		go routeWorker(&wg, &client, threshold, jobs, results)
+		go routeWorker(&wg, &client, targetLineId, threshold, jobs, results)
 	}
 
 	//assign the workers
@@ -87,13 +89,13 @@ func AnalyseRoute(client tflclient.Client, threshold int, route models.Route) []
 	return bunchesWithoutRepeats
 }
 
-func routeWorker(wg *sync.WaitGroup, client *tflclient.Client, threshold int, jobs <-chan string, results chan<- []models.BunchingEvent) {
+func routeWorker(wg *sync.WaitGroup, client *tflclient.Client, targetLineID string, threshold int, jobs <-chan string, results chan<- []models.BunchingEvent) {
 	for stopId := range jobs {
 		arrivals, err := stops.GetStopArrivalInfo(client, stopId)
 		if err != nil {
 			log.Printf("Unable to get arrival info for stop '%s': %v", stopId, err)
 		}
-		bunches := AnalyseArrivals(arrivals, threshold)
+		bunches := AnalyseArrivals(arrivals, targetLineID, threshold)
 		results <- bunches
 		wg.Done()
 	}

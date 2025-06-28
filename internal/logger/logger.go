@@ -10,7 +10,7 @@ import (
 	"github.com/5tuartw/tfl-bunching-detector/internal/models"
 )
 
-func LogBunchingEvents(bunches []models.BunchingEvent) error {
+func LogBunchingEvents(bunches []models.BunchingEvent, lineId string) error {
 
 	csvFile, err := os.OpenFile("internal/data/logged_bunching_events.csv", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
@@ -34,7 +34,7 @@ func LogBunchingEvents(bunches []models.BunchingEvent) error {
 		}
 	}
 
-	log.Printf("Writing %d bunching events to the log for line ...", len(bunches))
+	log.Printf("Writing %d bunching events to the log for line %s...", len(bunches), lineId)
 
 	for _, event := range bunches {
 		record := []string{
