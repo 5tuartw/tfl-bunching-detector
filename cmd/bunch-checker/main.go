@@ -34,7 +34,7 @@ func main() {
 		log.Fatalf("ERROR: unable to load config: %v", err)
 	}
 
-	httpClient := tflclient.NewClient("https://api.tfl.gov.uk", cfg.TflKey)
+	tflClient := tflclient.NewClient("https://api.tfl.gov.uk", cfg.TflKey)
 
 	allBusStops, err := stops.LoadBusStops()
 	if err != nil {
@@ -44,14 +44,14 @@ func main() {
 	// Analysing the given lineId at the current moment
 	if *lineId != "" {
 		fmt.Printf("Looking up routes and stops on bus line %s...\n\n", *lineId)
-		lineInfo, err := lines.GetLineInfo(httpClient, *lineId)
+		lineInfo, err := lines.GetLineInfo(tflClient, *lineId)
 		if err != nil {
 			log.Fatalf("ERROR: could not get line information for %s: %v", *lineId, err)
 		}
 
 		selectedRoutes := lines.ChooseRoute(lineInfo)
 		for _, route := range selectedRoutes {
-			routeBunchingEvents := analysis.AnalyseRoute(*httpClient, *lineId, *bunchingThreshold, lineInfo.Routes[route])
+			routeBunchingEvents := analysis.AnalyseRoute(*tflClient, *lineId, *bunchingThreshold, lineInfo.Routes[route])
 			routeName := lineInfo.Routes[route].Name
 			display.PrintBunchingData(routeName, *bunchingThreshold, routeBunchingEvents)
 		}
@@ -80,7 +80,7 @@ func main() {
 	// looking up arrivalInfo for each selected stop and displaying to terminal
 	for _, stop := range chosenBusStops {
 
-		arrivalInfo, err := stops.GetStopArrivalInfo(httpClient, stop.NaptanId)
+		arrivalInfo, err := stops.GetStopArrivalInfo(tflClient, stop.NaptanId)
 		if err != nil {
 			log.Fatalf("ERROR: could not get arrival information for stop %s: %v", stop.NaptanId, err)
 		}
