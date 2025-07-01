@@ -13,7 +13,7 @@ func (m *Model) updateSplashScreen(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var spinnerCmd tea.Cmd
 	m.Spinner, spinnerCmd = m.Spinner.Update(msg)
 
-	timeoutCmd := tea.Tick(2*time.Second, func(t time.Time) tea.Msg {
+	timeoutCmd := tea.Tick(5*time.Second, func(t time.Time) tea.Msg {
 		return splashTimeoutMsg{}
 	})
 
@@ -40,7 +40,7 @@ func (m *Model) viewSplashScreen() string {
 		Border(lipgloss.RoundedBorder(), true).
 		BorderForeground(lipgloss.Color("#4A90E2")).
 		Padding(2, 4).
-		Width(80)
+		Width(100)
 
 	ui := boxStyle.Render(content)
 	return lipgloss.NewStyle().
