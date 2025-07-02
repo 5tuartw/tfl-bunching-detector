@@ -1,6 +1,6 @@
 # 🚌 TfL Bus Bunching Detector
 
-This command-line tool suite analyses live London bus arrival data to detect and report instances of bus bunching on specific routes or at specific stops. It uses the Transport for London (TfL) API to fetch real-time data and applies a configurable threshold to identify when buses are arriving too close together (bunching).
+This command-line tool suite analyses live London bus arrival data to detect and report instances of bus bunching on specific routes or at specific stops. It uses the Transport for London (TfL) API to fetch real-time data and applies a configurable threshold to identify when buses are arriving too close together (bunching). It can also be set to run for a period of time, checking routes regularly for bunching events to identify when they are more likely to occur.
 
 ## ✨ Features
 - **Real-time Analysis**: Detects bus bunching events for a given route or stop using live TfL data
