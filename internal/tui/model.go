@@ -22,16 +22,18 @@ const (
 )
 
 type Model struct {
-	State     AppState // current state
-	AllStops  []models.BusStop
-	TflClient *tflclient.Client
-	Threshold int
-	Err       error
-	TermWidth int
+	State      AppState // current state
+	AllStops   []models.BusStop
+	TflClient  *tflclient.Client
+	Threshold  int
+	Err        error
+	TermWidth  int
+	TermHeight int
 
 	//main menu data
 	MainMenuChoices []string
 	Cursor          int
+	CursorStyle     lipgloss.Style
 
 	//Stop search data
 	StopSearchInput textinput.Model
@@ -40,6 +42,10 @@ type Model struct {
 	ThresholdInput  textinput.Model
 
 	Spinner spinner.Model
+
+	CurrentPage  int
+	ItemsPerPage int
+	TotalPages   int
 }
 
 func NewModel(allStops []models.BusStop, client *tflclient.Client) *Model {
@@ -61,5 +67,7 @@ func NewModel(allStops []models.BusStop, client *tflclient.Client) *Model {
 		MainMenuChoices: []string{"Spot-check a Stop", "Spot-check a Line (coming soon)", "Start a Logging Session (coming soon)"},
 		StopSearchInput: ti,
 		SelectedStops:   make(map[int]struct{}),
+		ItemsPerPage:    10, // Show 10 items per page
+		CursorStyle:     lipgloss.NewStyle().Foreground(lipgloss.Color("#4A90E2")).Bold(true),
 	}
 }

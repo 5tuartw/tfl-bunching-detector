@@ -17,6 +17,15 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case tea.WindowSizeMsg:
 		m.TermWidth = msg.Width
+		m.TermHeight = msg.Height
+		availableSpace := m.TermHeight - 7
+		if availableSpace < 4 {
+			availableSpace = 4
+		}
+		m.ItemsPerPage = availableSpace
+		if m.Cursor > 0 {
+			m.Cursor = 0
+		}
 		return m, nil
 
 	case splashTimeoutMsg:

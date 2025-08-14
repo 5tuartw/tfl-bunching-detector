@@ -13,6 +13,9 @@ type Arrival struct {
 
 type BunchingEvent struct {
 	LineId      string    `json:"lineId"`
+	RouteId     string    `json:"routeId"`
+	RouteName   string    `json:"routeName"`
+	Direction   string    `json:"direction"`
 	NaptanId    string    `json:"naptanId"`
 	StationName string    `json:"stationName"`
 	EventTime   time.Time `json:"eventTime"`
@@ -22,7 +25,6 @@ type BunchingEvent struct {
 
 type RouteBunches struct {
 	RouteName string `json:"name"`
-	
 }
 
 type BusStop struct {

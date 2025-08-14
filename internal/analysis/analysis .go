@@ -27,6 +27,7 @@ func AnalyseArrivals(arrivals []models.Arrival, targetLineID string, bunchingThr
 				if headway < bunchingThreshold {
 					bunchingEvents = append(bunchingEvents, models.BunchingEvent{
 						LineId:      line,
+						Direction:   groupedArrivals[line][idx].NaptanId,
 						NaptanId:    groupedArrivals[line][idx].NaptanId,
 						StationName: groupedArrivals[line][idx].StationName,
 						EventTime:   time.Now(),
@@ -56,7 +57,7 @@ func groupByLine(arrivals []models.Arrival) map[string][]models.Arrival {
 
 func AnalyseRoute(client tflclient.Client, targetLineId string, threshold int, route models.Route) []models.BunchingEvent {
 	bunchesOnRoute := []models.BunchingEvent{}
-
+	log.Printf("Analyzing route: %s", route.Name)
 	var wg sync.WaitGroup
 	jobs := make(chan string, len(route.StopIds))
 	results := make(chan []models.BunchingEvent)

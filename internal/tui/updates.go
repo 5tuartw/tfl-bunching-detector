@@ -42,6 +42,14 @@ func (m *Model) updateStopSearchInput(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if key, ok := msg.(tea.KeyMsg); ok && key.Type == tea.KeyEnter {
 		searchQuery := m.StopSearchInput.Value()
 		m.SearchResults = stops.SearchStops(searchQuery, m.AllStops)
+
+		// Initialize pagination
+		m.CurrentPage = 0
+		m.TotalPages = (len(m.SearchResults) + m.ItemsPerPage - 1) / m.ItemsPerPage
+		if m.TotalPages == 0 {
+			m.TotalPages = 1
+		}
+
 		m.State = StateStopSearchResults
 		m.Cursor = 0
 		m.StopSearchInput.Blur()
@@ -61,14 +69,29 @@ func (m *Model) updateStopSearchResults(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.Cursor--
 			}
 		case "down", "j":
-			if m.Cursor < len(m.SearchResults)-1 {
+			currentPageItems := m.getCurrentPageItems()
+			if m.Cursor < len(currentPageItems)-1 {
 				m.Cursor++
 			}
+		case "left", "h":
+			if m.CurrentPage > 0 {
+				m.CurrentPage--
+				m.Cursor = 0
+			}
+		case "right", "l":
+			if m.CurrentPage < m.TotalPages-1 {
+				m.CurrentPage++
+				m.Cursor = 0
+			}
 		case " ": // Toggle selection
-			if _, ok := m.SelectedStops[m.Cursor]; ok {
-				delete(m.SelectedStops, m.Cursor)
-			} else {
-				m.SelectedStops[m.Cursor] = struct{}{}
+			// Calculate the actual index in the full SearchResults slice
+			actualIndex := m.CurrentPage*m.ItemsPerPage + m.Cursor
+			if actualIndex < len(m.SearchResults) {
+				if _, ok := m.SelectedStops[actualIndex]; ok {
+					delete(m.SelectedStops, actualIndex)
+				} else {
+					m.SelectedStops[actualIndex] = struct{}{}
+				}
 			}
 		case "enter": // Confirm selection
 			m.State = StateQuitting

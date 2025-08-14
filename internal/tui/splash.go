@@ -43,7 +43,11 @@ func (m *Model) viewSplashScreen() string {
 		Width(100)
 
 	ui := boxStyle.Render(content)
+	leftMargin := (m.TermWidth - lipgloss.Width(ui)) / 2
+	if leftMargin < 0 {
+		leftMargin = 0
+	}
 	return lipgloss.NewStyle().
-		MarginLeft(m.TermWidth - lipgloss.Width(ui)/2).
+		MarginLeft(leftMargin).
 		Render(ui)
 }
